@@ -1,0 +1,37 @@
+## BUILDING
+##   (from project root directory)
+##   $ docker build -t tomcat-for-cozmotrouble-stacksmithtomcat .
+##
+## RUNNING
+##   $ docker run -p 8080:8080 tomcat-for-cozmotrouble-stacksmithtomcat
+##
+## CONNECTING
+##   Lookup the IP of your active docker host using:
+##     $ docker-machine ip $(docker-machine active)
+##   Connect to the container at DOCKER_IP:8080
+##     replacing DOCKER_IP for the IP of your active docker host
+
+FROM gcr.io/stacksmith-images/minideb-buildpack:jessie-r3
+
+MAINTAINER Bitnami <containers@bitnami.com>
+
+ENV STACKSMITH_STACK_ID="vh56uno" \
+    STACKSMITH_STACK_NAME="Tomcat for cozmotrouble/stacksmithTomcat" \
+    STACKSMITH_STACK_PRIVATE="1"
+
+RUN bitnami-pkg install java-1.8.0_111-0 --checksum a40aa0c9553e13bd8ddcc3d2ba966492b79d4f73d47cb1499c9ec54f441201eb
+RUN bitnami-pkg install tomcat-8.5.8-0 --checksum c5beffc52e886af561df06239ceaf8afae5d1fafb86fc32e7b38bf0ed4bb2104 -- --username manager --password bitnami
+
+ENV JAVA_HOME=/opt/bitnami/java \
+    CATALINA_HOME=/opt/bitnami/tomcat
+ENV PATH=$CATALINA_HOME/bin:/opt/bitnami/java/bin:$PATH
+
+## STACKSMITH-END: Modifications below this line will be unchanged when regenerating
+
+# Tomcat server template
+RUN ln -s $CATALINA_HOME/webapps /app
+WORKDIR /app
+COPY . /app
+
+EXPOSE 8080
+CMD ["nami", "start", "--foreground", "tomcat"]
